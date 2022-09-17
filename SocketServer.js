@@ -107,7 +107,7 @@ socket.on('unFollow', newUser =>{
   
 // notification
 socket.on('createNotify', msg =>{
-    const client = users.find(user => msg.recipients.includes(user.id))
+     const client = users.find(user => msg.recipients.includes(user.id))
      client &&  socket.to(`${client.socketId}`).emit('createNotifyToClient', msg)
 })
 

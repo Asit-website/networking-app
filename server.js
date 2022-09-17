@@ -6,11 +6,14 @@ const cookieParser = require('cookie-parser');
 const SocketServer = require("./SocketServer");
 const {ExpressPeerServer} = require('peer');
 const path = require('path');
-
 const app = express();
+//  middlewarwe 
 app.use(express.json());
 app.use(cors());
-app.use(cookieParser());
+app.use(cookieParser()); 
+
+
+
 
 //socket
 // createServer ke andar ap app ko le lo 
@@ -19,7 +22,7 @@ const io = require('socket.io')(http)
 
 // const users = []
 io.on('connection', socket =>{
-   SocketServer(socket)
+   SocketServer(socket);
 })
 
 // create peer server // peerserver port aur path lete hai because it is a object 
@@ -39,7 +42,6 @@ app.use('/api', require('./routes/messageRouter'));
 //database connection
 const URI = process.env.MONGODB_URL
 mongoose.connect(URI,{
-    
 }).then(()=>{
     console.log("connection successfull");
 }).catch(()=>{
@@ -55,7 +57,6 @@ if(process.env.NODE_ENV==='production'){
 }
 
 const port = process.env.PORT || 5000;
-
 http.listen(port,()=>{
     console.log('server is runing on port',port);
 })

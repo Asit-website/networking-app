@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-
+// likes comments aur user rahega
 const postSchema = new mongoose.Schema({
     content: String,
     images:{

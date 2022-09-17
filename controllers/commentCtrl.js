@@ -3,13 +3,11 @@ const Posts = require("../models/postModal");
 const commentCtrl = {
    createComment:async(req,res) =>{
        try {
-           // postid for calculate the id of post
+          const {postId, content, tag, reply, postUserId} = req.body;
 
-          const {postId, content, tag, reply, postUserId} = req.body
+          const post = await Posts.findById(postId);
 
-          const post = await Posts.findById(postId)
-
-          if(!post)  return res.status(400).json({msg:"This Post Does Not Exist"})
+          if(!post)  return res.status(400).json({msg:"This Post Does Not Exist"});
 
           if(reply){
               const cm = await Comments.findById(reply)
@@ -19,10 +17,10 @@ const commentCtrl = {
           const newComment = new Comments({
               user: req.user._id, content, tag, reply, postUserId, postId
           })
-// jaha upadte waha push ho sakta hai
+
           await Posts.findOneAndUpdate({_id:postId},{
               $push:{comments: newComment._id}
-          },{new:true})
+          },{new:true});
 
           await newComment.save();
 
@@ -37,11 +35,10 @@ const commentCtrl = {
 
    updateComment: async (req,res) =>{
        try {
+        // _id:req.params.id and user:req.user._id most important
          const {content} = req.body;
 
          await Comments.findOneAndUpdate({_id:req.params.id, user:req.user._id},{content})
-
-    
 
          res.json({msg:"Update Success!"})
        } 
@@ -67,7 +64,7 @@ const commentCtrl = {
     } 
     
     catch (error) {
-     return res.status(500).json({msg:error.message})   
+       return res.status(500).json({msg:error.message})   
     }
 },
 
@@ -85,6 +82,7 @@ unLikeComment:async(req,res) =>{
  }
 },
 
+// comment ko delete krne ka function hai ye yr
 deleteComment:async (req,res) =>{
     try {
        const comment = await Comments.findOneAndDelete({
@@ -93,9 +91,8 @@ deleteComment:async (req,res) =>{
              {user:req.user._id},
              {postUserId:req.user._id}
            ]
-
        }) 
-
+   // req.params.id important hai 
        await Posts.findOneAndUpdate({_id:comment.postId},{
            $pull: {Comments: req.params.id}
        })

@@ -1,4 +1,5 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
+// content, tag, reply, likes, user,postid aur postUserid
 const commentSchema = new mongoose.Schema({
     content: {
         type: String,
@@ -14,4 +15,4 @@ const commentSchema = new mongoose.Schema({
     timestamps: true
 })
 
-module.exports = mongoose.model('comment', commentSchema)
+module.exports = mongoose.model('comment', commentSchema);

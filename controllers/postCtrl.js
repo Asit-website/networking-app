@@ -9,26 +9,26 @@ class APIfeatures {
     }
 
     paginating(){
-        const page = this.queryString.page * 1 || 1
-        const limit = this.queryString.limit * 1 || 9
-        const skip = (page-1) * limit
-        this.query = this.query.skip(skip).limit(limit)
+        const page = this.queryString.page * 1 || 1;
+        const limit = this.queryString.limit * 1 || 9;
+        const skip = (page-1) * limit;
+        this.query = this.query.skip(skip).limit(limit);
         return this;
     }
 }
 
 const postCtrl = {
-  
+
     createPost:async(req,res) =>{
         try {
-          const {content, images} = req.body
+          const {content, images} = req.body;
 
           if(images.length === 0)
             return res.status(500).json({msg: "Please Add Your pic"})
 
           const newPost = await new Posts({
               content, images, user: req.user._id
-          })
+          });
 
           await newPost.save();
 
@@ -39,6 +39,8 @@ const postCtrl = {
                      user:req.user
               }
           })
+
+
         } 
         
         catch (error) {
@@ -46,6 +48,7 @@ const postCtrl = {
         }
     },
 
+    // getpost ke sort mai -createdAt likhna
    getPost:async(req,res) => {
        try {
            const features = new APIfeatures(Posts.find({
@@ -76,7 +79,6 @@ const postCtrl = {
    updatePost:async(req,res) =>{
        try {
            const {content, images} = req.body
-
            const post = await Posts.findOneAndUpdate({_id:req.params.id}, {
                content, images
            }).populate("user likes", "avatar username fullname")
@@ -104,8 +106,7 @@ const postCtrl = {
 
    likePost:async(req,res) =>{
        try {
-           const post = await Posts.find({_id:req.params.id, likes:req.user._id})
-         
+           const post = await Posts.find({_id:req.params.id, likes:req.user._id});
            if(post.length>0) {
               return res.status(400).json({msg:"You liked this post."})
            }
@@ -113,10 +114,10 @@ const postCtrl = {
        const like = await Posts.findOneAndUpdate({_id:req.params.id},{
              $push:{likes: req.user._id}
          }, {new:true})  
-// push aur pull lagate waqt new ko true kro
+
          if(!like) return res.status(400).json({msg:"This Post Does not exist"})
 
-         res.json({msg:'Liked Post!'})
+         res.json({msg:'Liked Post!'});
        } 
        
        catch (error) {
@@ -137,14 +138,13 @@ const postCtrl = {
      return res.status(500).json({msg:error.message})   
     }
 },
-// user ka post prapt krne ka function yaha populate ni krenge
+// user(profile) ka post prapt krne ka function yaha populate ni krenge
 getUserPosts:async(req,res) =>{
     try {
-        const features = new APIfeatures(Posts.find({user:req.params.id}), req.query)
+         const features = new APIfeatures(Posts.find({user:req.params.id}), req.query)
         .paginating()
          const posts = await features.query.sort("-createdAt")  // vo user hai jo login hokar ni a rahe hai 
-
-      res.json({
+         res.json({
           posts,
           result:posts.length
       })
@@ -156,11 +156,10 @@ getUserPosts:async(req,res) =>{
         return res.status(500).json({msg:error.message})    
     }
 },
-// ab get posts
+// ab get posts(id wala post(user)) 
+// id wale post par apiFeatures ki jarurat ni hoti.
 getPosts:async(req,res) =>{
     try {
-        // id wale post ke liye 
-        // id wale post aur simple get post mai ap 2 populate method lagao 
         const post = await Posts.findById(req.params.id).
         populate("user likes", "avatar username fullname followers")
            .populate({
@@ -171,7 +170,7 @@ getPosts:async(req,res) =>{
                } 
            })
 
-           if(!post) return res.status(400).json({msg:"This Post does not exist"})
+           if(!post) return res.status(400).json({msg:"This Post does not exist"});
 
            res.json({
                post
@@ -185,47 +184,41 @@ getPosts:async(req,res) =>{
 // discover kro 
 getPostDiscover: async(req,res) =>{
    try {
-
     const newArr = [...req.user.following, req.user._id]
-
     const num  = req.query.num || 9
-// posts.aggregate lagao ap 
     const posts = await Posts.aggregate([
         { $match: { user: { $nin: newArr } } },
         { $sample: { size: Number(num) } },
-      
     ]).project("-password")
      
-  return res.json({
+    return res.json({
         msg:'Success!',
-        result: posts.length, 
+        result:posts.length, 
         posts
     })
        
    } 
    
    catch (error) {
-       return res.status(500).json({msg:error.msg})
+       return res.status(500).json({msg:error.msg});
    }
 
 
 },
 
+// delete kro post ko 
 deletePost: async(req,res) =>{
     try {
-        // _id aur user ko find kro yr 
+        // user aur id ko delete kro easly
         const post = await Posts.findOneAndDelete({_id:req.params.id, user:req.user._id})
-          // deletepost mai id ko aur user ko dono ko delete
-          // comments ko vi posts ke stah associated krte hai 
         await Comments.deleteMany({_id:{$in:post.comments}})
-// user is req.user 
         res.json({
             msg:"deleted Posts!",
             newPost:{
                 ...post,
                 user:req.user
             }
-     })
+          })
 
     } 
     
@@ -270,7 +263,7 @@ unSavePost: async (req, res) => {
 // savepost ko prapt krna 
 getSavePosts: async (req, res) => {
     try {
-        // features ko ap new APIfeatures kro _id, req.user.saved ke andar hona chaye apka 
+        // _id jo ki req.user.saved mai hai 
         const features = new APIfeatures(Posts.find({
             _id: {$in: req.user.saved}
         }), req.query).paginating()

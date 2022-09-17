@@ -1,12 +1,11 @@
 const Conversations = require('../models/conversationModel');
-
 const Messages = require('../models/messageModel');
-
 class APIfeatures {
     constructor(query,queryString){
-      this.query = query
-      this.queryString = queryString
+      this.query = query;
+      this.queryString = queryString;
     }
+   //pagination features are very well
 
     paginating(){
         const page = this.queryString.page * 1 || 1
@@ -25,7 +24,7 @@ const messageCtrl = {
            const {sender, recipient, text, media, call} = req.body;
 
            if(!recipient || (!text.trim() && media.length === 0 && !call)) return;
-// $or hamesa array hota hai 
+
            const newConversation = await Conversations.findOneAndUpdate({
                $or:[
                    // sender == req.user._id
@@ -36,16 +35,16 @@ const messageCtrl = {
                 recipients: [sender, recipient],
                 text, media, call
            },{new:true, upsert:true})
-
+           // converstaion ko newConversation._id hoga 
+           
            const newMessage = new Messages({
             conversation: newConversation._id,
             sender,call,
             recipient, text, media
            })
-
+           
            await newMessage.save();
-
-           res.json({msg:"create Success"})
+           res.json({msg:"create Message Success"})
        } 
        
        catch (error) {
@@ -53,13 +52,14 @@ const messageCtrl = {
        }
    },
 
+   // getConverstaion
    getConversations: async (req, res) =>{
        try {
-
            const features = new APIfeatures(Conversations.find({
                recipients:req.user._id
-           }), req.query).paginating()
-
+           }), req.query).paginating();
+           
+           // upadted hota hai easly 
             const conversations = await features.query.sort('-updatedAt')
            .populate('recipients', 'avatar username fullname')
 
@@ -76,18 +76,17 @@ const messageCtrl = {
    },
 
    getMessages: async (req, res) => {
+
     try {
+
         const features = new APIfeatures(Messages.find({
-            
             $or: [
                 {sender: req.user._id, recipient: req.params.id},
                 {sender: req.params.id, recipient: req.user._id},
             ]
-
         }), req.query).paginating()
 
-         const messages = await features.query.sort('-createdAt')
-   
+         const messages = await features.query.sort('-createdAt');
 
         res.json({
             messages,

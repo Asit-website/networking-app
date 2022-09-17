@@ -7,7 +7,6 @@ const authCtrl = {
     try {
       const {fullname, username, email, password, gender} = req.body;
       let newUserName = username.toLowerCase().replace(/ /g, "");
-
       const user_name = await Users.findOne({ username: newUserName });
       if (user_name)
         return res.status(400).json({ msg: "This Username is Already Exists" });
@@ -22,9 +21,8 @@ const authCtrl = {
           .json({ msg: "password length is atleast 6 character" });
       }
 
-      const passwordHash = await bcrypt.hash(password,12)
+      const passwordHash = await bcrypt.hash(password,12);
 
-    //   console.log(passwordHash);
 
     const newUser = new Users({
         fullname,
@@ -32,7 +30,6 @@ const authCtrl = {
         email,
         password:passwordHash,
         gender
-
     })
 
 
@@ -49,8 +46,7 @@ const authCtrl = {
 
        await newUser.save();
 
-      //user save hote hai sare ke sare newuser ke document a jaye than ...newuser use kro
-      // kuyki is bar hm user ko hi update krne wale hai 
+     // user as a object vi bhejo isme ap 
       res.json({ msg: "Register Success!",
       access_token,
       user:{
@@ -77,8 +73,8 @@ const authCtrl = {
         if(!isMatch) return res.status(400).json({msg:"password is incorrect"})
 
         //create jsonwebtoken for user
-       const access_token = createAccessToken({id:user._id})
-       const refresh_token = createRefreshToken({id:user._id})
+       const access_token = createAccessToken({id:user._id});
+       const refresh_token = createRefreshToken({id:user._id});
 
     // set The cookie
       res.cookie('refreshtoken',refresh_token, {
@@ -108,9 +104,9 @@ const authCtrl = {
   logout: async (req, res) => {
     try {
       res.clearCookie('refreshtoken', {path:'/api/refresh_token'})
-      return res.json({msg:"Logged out!"})
+      return res.json({msg:"Logged out!"});
     }
-    
+     
     catch (error) {
       return res.status(500).json({ msg: error.message });
     }
@@ -121,7 +117,7 @@ const authCtrl = {
       const rf_token = req.cookies.refreshtoken;
           // refrence object ko lene ke liye apan populate ka use krte hai
       if(!rf_token) return res.status(400).json({msg:"Please Login Now."})
-// refrence document in other collections
+         // refrence document in other collections
       jwt.verify(rf_token,process.env.REFRESH_TOKEN_SECRET, async(err,result)=>{
           if(err) return res.status(400).json({msg:"Please Login"})
 
@@ -130,7 +126,7 @@ const authCtrl = {
 
           if(!user) return res.status(400).json({msg:"This Does Not Exist"})
 
-          const access_token = createAccessToken({id: result.id})
+          const access_token = createAccessToken({id: result.id});
 
           res.json({
             access_token,
